@@ -21,10 +21,11 @@
 <h2 align="center">🎬 Supmate Demo</h2>
 
 <p align="center">
-  <video src="./public/assets/supmate-demo.mp4" controls width="100%">
-    Your browser does not support video playback.
-  </video>
+  <a href="https://github.com/GREYHATTER225/supmate-web3/blob/main/public/assets/supmate-demo.mp4">
+    ▶️ <strong>Click here to watch the Supmate demo video</strong>
+  </a>
 </p>
+
 
 
 
