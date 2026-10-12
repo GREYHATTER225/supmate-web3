@@ -961,28 +961,28 @@ The following are potential next steps, not claims that the features are already
 
 📊 GitHub stats & streak cards
 
-<p align="center"><sub>Personal stats cards use your GitHub username. Replace <code>YOUR_GITHUB_USERNAME</code> in the image URLs below before publishing. GitHub supports theme-aware images through the HTML <code>&lt;picture&gt;</code> element.</sub></p>
+<p align="center"><sub>Personal stats cards use your GitHub username. Replace <code>GREYHATTER225</code> in the image URLs below before publishing. GitHub supports theme-aware images through the HTML <code>&lt;picture&gt;</code> element.</sub></p>
 
-<!-- Replace YOUR_GITHUB_USERNAME in the URLs below with the repository owner's GitHub username. -->
+<!-- Replace GREYHATTER225 in the URLs below with the repository owner's GitHub username. -->
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=YOUR_GITHUB_USERNAME&amp;show_icons=true&amp;hide_border=true&amp;theme=github_dark&amp;rank_icon=github" />
-    <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api?username=YOUR_GITHUB_USERNAME&amp;show_icons=true&amp;hide_border=true&amp;theme=default&amp;rank_icon=github" />
-    <img src="https://github-readme-stats.vercel.app/api?username=YOUR_GITHUB_USERNAME&amp;show_icons=true&amp;hide_border=true&amp;theme=github_dark&amp;rank_icon=github" alt="GitHub profile statistics for YOUR_GITHUB_USERNAME" height="165" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=GREYHATTER225&amp;show_icons=true&amp;hide_border=true&amp;theme=github_dark&amp;rank_icon=github" />
+    <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api?username=GREYHATTER225&amp;show_icons=true&amp;hide_border=true&amp;theme=default&amp;rank_icon=github" />
+    <img src="https://github-readme-stats.vercel.app/api?username=GREYHATTER225&amp;show_icons=true&amp;hide_border=true&amp;theme=github_dark&amp;rank_icon=github" alt="GitHub profile statistics for GREYHATTER225" height="165" />
   </picture>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=YOUR_GITHUB_USERNAME&amp;layout=compact&amp;hide_border=true&amp;theme=github_dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=YOUR_GITHUB_USERNAME&amp;layout=compact&amp;hide_border=true&amp;theme=default" />
-    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=YOUR_GITHUB_USERNAME&amp;layout=compact&amp;hide_border=true&amp;theme=github_dark" alt="Most-used languages for YOUR_GITHUB_USERNAME" height="165" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=GREYHATTER225&amp;layout=compact&amp;hide_border=true&amp;theme=github_dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=GREYHATTER225&amp;layout=compact&amp;hide_border=true&amp;theme=default" />
+    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=GREYHATTER225&amp;layout=compact&amp;hide_border=true&amp;theme=github_dark" alt="Most-used languages for GREYHATTER225" height="165" />
   </picture>
 </p>
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://streak-stats.demolab.com?user=YOUR_GITHUB_USERNAME&amp;hide_border=true&amp;theme=github-dark-blue" />
-    <source media="(prefers-color-scheme: light)" srcset="https://streak-stats.demolab.com?user=YOUR_GITHUB_USERNAME&amp;hide_border=true&amp;theme=default" />
-    <img src="https://streak-stats.demolab.com?user=YOUR_GITHUB_USERNAME&amp;hide_border=true&amp;theme=github-dark-blue" alt="GitHub contribution streak for YOUR_GITHUB_USERNAME" width="700" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://streak-stats.demolab.com?user=GREYHATTER225&amp;hide_border=true&amp;theme=github-dark-blue" />
+    <source media="(prefers-color-scheme: light)" srcset="https://streak-stats.demolab.com?user=GREYHATTER225&amp;hide_border=true&amp;theme=default" />
+    <img src="https://streak-stats.demolab.com?user=GREYHATTER225&amp;hide_border=true&amp;theme=github-dark-blue" alt="GitHub contribution streak for GREYHATTER225" width="700" />
   </picture>
 </p>
 
