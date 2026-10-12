@@ -976,7 +976,6 @@ The following are potential next steps, not claims that the features are already
 
 <p align="center"><sub>Personal stats cards use your GitHub username. Replace <code>GREYHATTER225</code> in the image URLs below before publishing. GitHub supports theme-aware images through the HTML <code>&lt;picture&gt;</code> element.</sub></p>
 
-<!-- Replace GREYHATTER225 in the URLs below with the repository owner's GitHub username. -->
 
 <p align="center">
   <picture>
@@ -991,15 +990,7 @@ The following are potential next steps, not claims that the features are already
   </picture>
 </p>
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://streak-stats.demolab.com?user=GREYHATTER225&amp;hide_border=true&amp;theme=github-dark-blue" />
-    <source media="(prefers-color-scheme: light)" srcset="https://streak-stats.demolab.com?user=GREYHATTER225&amp;hide_border=true&amp;theme=default" />
-    <img src="https://streak-stats.demolab.com?user=GREYHATTER225&amp;hide_border=true&amp;theme=github-dark-blue" alt="GitHub contribution streak for GREYHATTER225" width="700" />
-  </picture>
-</p>
-
-<sub>These cards are provided by third-party services and may be rate-limited or unavailable. They reflect the configured GitHub profile, not proof of Supmate's build health, security, or product activity.</sub>
+<
 
 📜 Project details
 
