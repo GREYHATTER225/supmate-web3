@@ -12,15 +12,17 @@
 
 ### Your Space. Your Keys. Your Conversations.
 
-**A sovereign Web3 messaging experience built on DeSo.**
+**A sovereign Web3 messaging experience built on the DeSo blockchain.**
 
-Non-custodial identity · On-device encryption · Real-time messaging
+Decentralized Identity · Secure Messaging · Real-Time Communication
+
+[View Repository](https://github.com/GREYHATTER225/supmate-web3)
 
 </div>
 
 ---
 
-# 📸 Supmate — Project Demo
+# 📸 01. Project Demo
 
 Explore the Supmate interface through the screenshots below.
 
@@ -28,88 +30,102 @@ Explore the Supmate interface through the screenshots below.
 
 <table>
 <tr>
-<td align="center" width="50%">
+<td width="50%" align="center">
+
+### 💬 Chat Interface
+
 <img src="./public/assets/demoimages/chatui.png" width="100%" alt="Supmate Chat Interface"/>
-<br/>
-<b>💬 Chat Interface</b>
-<br/>
+
 <sub>Main messaging experience</sub>
+
 </td>
-<td align="center" width="50%">
+<td width="50%" align="center">
+
+### 🏠 Home Screen
+
 <img src="./public/assets/demoimages/home.png" width="100%" alt="Supmate Home Screen"/>
-<br/>
-<b>🏠 Home Screen</b>
-<br/>
-<sub>Supmate application landing interface</sub>
+
+<sub>Application landing interface</sub>
+
 </td>
 </tr>
 
 <tr>
-<td align="center" width="50%">
+<td width="50%" align="center">
+
+### 🎬 Demo Screen
+
 <img src="./public/assets/demoimages/demoscreen.png" width="100%" alt="Supmate Demo Screen"/>
-<br/>
-<b>🎬 Demo Screen</b>
-<br/>
+
 <sub>Application demonstration</sub>
+
 </td>
-<td align="center" width="50%">
+<td width="50%" align="center">
+
+### ℹ️ Information Interface
+
 <img src="./public/assets/demoimages/infoui.png" width="100%" alt="Supmate Information Interface"/>
-<br/>
-<b>ℹ️ Information UI</b>
-<br/>
+
 <sub>Application information interface</sub>
+
 </td>
 </tr>
 
 <tr>
-<td align="center" width="50%">
+<td width="50%" align="center">
+
+### 🔐 Login Interface
+
 <img src="./public/assets/demoimages/login.png" width="100%" alt="Supmate Login Interface"/>
-<br/>
-<b>🔐 Login Interface</b>
-<br/>
+
 <sub>Wallet authentication experience</sub>
+
 </td>
-<td align="center" width="50%">
+<td width="50%" align="center">
+
+### 📨 Message Sending
+
 <img src="./public/assets/demoimages/text%20send.png" width="100%" alt="Supmate Message Sending Interface"/>
-<br/>
-<b>📨 Message Sending</b>
-<br/>
+
 <sub>Messaging interface preview</sub>
+
 </td>
 </tr>
 </table>
 
 ---
 
-# 📖 About the Project
+# 📖 02. About Supmate
 
 Supmate is a portfolio-ready Web3 messaging application demonstrating how decentralized identity and blockchain technology can support modern communication.
 
 Built using React, TypeScript and the DeSo protocol, Supmate combines decentralized wallet authentication, messaging functionality and a real-time communication interface.
 
-### ✨ Core Highlights
+## ✨ Core Highlights
 
-- **🔐 Decentralized authentication** — Users authenticate through DeSo wallet identity.
-- **🔒 Message encryption** — Supports client-side message encryption through the DeSo identity SDK when messaging access is available.
-- **💬 Direct messaging** — Supports individual conversations.
-- **👥 Group messaging** — Supports group conversations using DeSo access groups.
-- **⚡ Real-time updates** — A lightweight WebSocket gateway supports message event delivery.
-- **🎨 Modern interface** — Responsive UI with interactive components and animations.
-- **🧪 Demo mode** — Explore supported UI flows using mock demo data without connecting a wallet.
+- **🔐 Decentralized Authentication** — Users authenticate through DeSo wallet identity.
+- **🔒 Message Encryption** — Supports client-side message encryption through the DeSo Identity SDK when messaging access is available.
+- **💬 Direct Messaging** — Supports individual conversations.
+- **👥 Group Messaging** — Supports group conversations using DeSo access groups.
+- **⚡ Real-Time Updates** — A lightweight WebSocket gateway supports message event delivery.
+- **🎨 Modern Interface** — Responsive UI with interactive components and animations.
+- **🧪 Demo Mode** — Explore supported UI flows using mock demo data without connecting a wallet.
 
-The project is divided into two primary parts:
+## Project Components
 
-1. Frontend — React application.
-2. Backend — Express and WebSocket gateway.
+The codebase is divided into two primary parts:
+
+1. **Frontend:** React and TypeScript application.
+2. **Backend:** Express and WebSocket gateway.
 
 ---
 
-# 🛠️ Feature Overview
+# 🛠️ 03. Feature Overview
 
 | Feature | Description |
 |---|---|
 | DeSo Authentication | Wallet-based identity and login |
-| Direct Messaging | Individual messaging |
+| Direct Messaging | Individual conversations |
 | Group Messaging | Group conversations |
 | Message Encryption | Client-side encryption through DeSo SDK |
 | Unencrypted Fallback | Explicit fallback when encryption is unavailable |
@@ -122,21 +138,23 @@ The project is divided into two primary parts:
 
 ---
 
-# 🏗️ System Architecture
+# 🏗️ 04. System Architecture
 
-The following diagram illustrates the main application components and their relationships.
+Supmate combines a React frontend, DeSo blockchain integration and a lightweight backend gateway.
+
+## Architecture Diagram
 
 ```mermaid
-flowchart TB
+flowchart TD
 
-    USER(["👤 User"])
+    USER["User"]
 
-    subgraph FRONTEND["🖥️ SUPMATE FRONTEND"]
+    subgraph FRONTEND["SUPMATE FRONTEND"]
         UI["React User Interface"]
         AUTH["DeSo Wallet Authentication"]
         MSG["Messaging Components"]
         SERVICE["Conversation Service"]
-        WALLET["Wallet & Encryption Services"]
+        WALLET["Wallet and Encryption Services"]
 
         UI --> AUTH
         UI --> MSG
@@ -144,18 +162,18 @@ flowchart TB
         SERVICE --> WALLET
     end
 
-    subgraph BLOCKCHAIN["⛓️ DeSo Infrastructure"]
+    subgraph BLOCKCHAIN["DESO INFRASTRUCTURE"]
+        SDK["DeSo Identity SDK"]
         RPC["DeSo Node RPC"]
-        IDENTITY["DeSo Identity SDK"]
-        CHAIN["Blockchain Data"]
-        
-        WALLET --> IDENTITY
+        DATA["Blockchain Data"]
+
+        WALLET --> SDK
         SERVICE --> RPC
-        RPC --> CHAIN
-        IDENTITY --> CHAIN
+        SDK --> DATA
+        RPC --> DATA
     end
 
-    subgraph BACKEND["⚙️ BACKEND GATEWAY"]
+    subgraph BACKEND["BACKEND GATEWAY"]
         EXPRESS["Express Server"]
         WS["WebSocket Relay"]
         CLIENTS["Connected WebSocket Clients"]
@@ -165,17 +183,13 @@ flowchart TB
     end
 
     USER --> UI
-    SERVICE <-->|"Message events"| WS
+    SERVICE --> WS
     CLIENTS --> SERVICE
-
-    style FRONTEND fill:#172554,stroke:#3B82F6,color:#FFFFFF
-    style BLOCKCHAIN fill:#3F2B16,stroke:#F59E0B,color:#FFFFFF
-    style BACKEND fill:#142D24,stroke:#10B981,color:#FFFFFF
 ```
 
-## 🔍 Architecture Components
+## Architecture Components
 
-### 1. Frontend
+### 1. Frontend Layer
 
 The React frontend manages:
 
@@ -210,7 +224,7 @@ The gateway is separate from the frontend application.
 
 ---
 
-# 🔄 Message Communication Flow
+# 🔄 05. Message Communication Flow
 
 The following sequence diagram illustrates the intended message lifecycle.
 
@@ -219,73 +233,65 @@ sequenceDiagram
 
     autonumber
 
-    actor Sender as Sender
+    actor Sender
     participant UI as Supmate Frontend
     participant SDK as DeSo Identity SDK
     participant RPC as DeSo Node
     participant WS as WebSocket Gateway
-    actor Receiver as Recipient
+    actor Receiver
 
     Sender->>UI: Compose message
-    UI->>SDK: Request encryption / submission
-    SDK->>RPC: Perform blockchain operation
-    RPC-->>SDK: Operation response
-    SDK-->>UI: Submission result
+    UI->>SDK: Request message operation
+    SDK->>RPC: Submit or retrieve message
+    RPC-->>SDK: Return response
+    SDK-->>UI: Return result
 
-    UI->>WS: Message notification
-    WS-->>Receiver: Relay event
+    UI->>WS: Send notification event
+    WS-->>Receiver: Relay notification
 
     Receiver->>UI: Open conversation
-    UI->>SDK: Retrieve conversation data
+    UI->>SDK: Request conversation data
     SDK->>RPC: Fetch message data
-    RPC-->>SDK: Message data
-    SDK-->>UI: Return message
-    UI-->>Receiver: Display conversation
+    RPC-->>SDK: Return message data
+    SDK-->>UI: Return conversation
+    UI-->>Receiver: Display message
 ```
 
-**Note:** This is a conceptual workflow diagram. Exact event ordering, gateway behavior and blockchain transaction handling depend on the implemented service logic.
+**Note:** This is a conceptual workflow. Exact event ordering and gateway behavior depend on the implemented service logic.
 
 ---
 
-# 🌐 Deployment Architecture
+# 🌐 06. Deployment Architecture
 
 Supmate can be deployed using separate frontend and backend services.
+
+## Deployment Diagram
 
 ```mermaid
 flowchart TB
 
-    USER(["🌍 User"])
+    USER["User"]
 
-    subgraph CLOUD["☁️ Deployment Environment"]
-
-        subgraph HOST["Frontend Hosting"]
-            STATIC["React Production Build"]
-            CDN["Static Asset Delivery"]
-        end
-
-        subgraph SERVER["Backend Hosting"]
-            API["Express Gateway"]
-            SOCKET["WebSocket Service"]
-        end
-
+    subgraph FRONTEND_HOST["FRONTEND HOSTING"]
+        BUILD["React Production Build"]
+        STATIC["Static Asset Hosting"]
     end
 
-    subgraph EXTERNAL["External Infrastructure"]
-        DESO["DeSo Blockchain / RPC"]
+    subgraph BACKEND_HOST["BACKEND HOSTING"]
+        API["Express Gateway"]
+        SOCKET["WebSocket Service"]
     end
 
-    USER --> STATIC
-    STATIC --> CDN
-    STATIC --> API
+    DESO["DeSo Blockchain RPC"]
+
+    USER --> BUILD
+    BUILD --> STATIC
+    BUILD --> API
     API --> SOCKET
-    STATIC --> DESO
-
-    style HOST fill:#172554,stroke:#3B82F6,color:#FFFFFF
-    style SERVER fill:#142D24,stroke:#10B981,color:#FFFFFF
-    style EXTERNAL fill:#3F2B16,stroke:#F59E0B,color:#FFFFFF
+    BUILD --> DESO
 ```
 
-### Deployment Options
+## Deployment Options
 
 | Component | Possible Platform |
 |---|---|
@@ -294,11 +300,11 @@ flowchart TB
 | Blockchain | DeSo RPC |
 | Source Code | GitHub |
 
-These are deployment options, not confirmation that Supmate is currently deployed on those platforms.
+These are possible deployment options, not confirmation of an existing deployment.
 
 ---
 
-# 🧰 Technology Stack
+# 🧰 07. Technology Stack
 
 | Category | Technology |
 |---|---|
@@ -309,13 +315,13 @@ These are deployment options, not confirmation that Supmate is currently deploye
 | Wallet Integration | DeSo Identity SDK |
 | Backend | Node.js |
 | Server Framework | Express |
-| Real-time Communication | WebSocket |
+| Real-Time Communication | WebSocket |
 | Testing | Jest |
 | Version Control | Git and GitHub |
 
 ---
 
-# 🧩 Project Structure
+# 🧩 08. Project Structure
 
 ```text
 Supmate/
@@ -367,7 +373,7 @@ Supmate/
 
 ---
 
-# ⚙️ Installation & Development
+# ⚙️ 09. Installation & Development
 
 ## Prerequisites
 
@@ -378,7 +384,7 @@ Supmate/
 | Git | Latest stable version |
 | DeSo Wallet | Compatible DeSo wallet |
 
-## 1. Clone the Repository
+## Step 1. Clone the Repository
 
 ```bash
 git clone https://github.com/GREYHATTER225/supmate-web3.git
@@ -386,13 +392,13 @@ git clone https://github.com/GREYHATTER225/supmate-web3.git
 cd supmate-web3
 ```
 
-## 2. Install Dependencies
+## Step 2. Install Dependencies
 
 ```bash
 npm ci
 ```
 
-## 3. Configure Environment Variables
+## Step 3. Configure Environment Variables
 
 Create your local environment file:
 
@@ -404,7 +410,7 @@ Configure the required values in `.env`.
 
 Never commit real credentials, API secrets or private keys.
 
-## 4. Start the Frontend
+## Step 4. Start the Frontend
 
 ```bash
 npm start
@@ -418,13 +424,15 @@ http://localhost:3000
 
 ---
 
-# ⚙️ Backend Setup
+# ⚙️ 10. Backend Setup
 
 The backend gateway can be started separately.
 
 ```bash
 cd server
+
 npm ci
+
 npm run dev
 ```
 
@@ -438,7 +446,7 @@ Configure the frontend gateway URL according to your environment.
 
 ---
 
-# 🔐 Environment Variables
+# 🔐 11. Environment Variables
 
 The following variables are documented for the project.
 
@@ -452,7 +460,7 @@ The following variables are documented for the project.
 | SERVER_PORT | Backend server port |
 | SERVER_WS_PATH | WebSocket endpoint path |
 
-Example values:
+## Example Configuration
 
 ```env
 REACT_APP_GATEWAY_WS_URL=ws://localhost:5000/ws
@@ -474,9 +482,9 @@ SERVER_WS_PATH=/ws
 
 ---
 
-# 📦 Production Build
+# 📦 12. Production Build & Deployment
 
-Build the React application:
+## Build the Frontend
 
 ```bash
 npm run build
@@ -492,9 +500,18 @@ The resulting static files can be hosted on a compatible static hosting provider
 
 The WebSocket gateway must be deployed separately if real-time gateway functionality is required.
 
+## Example Deployment: Vercel + Railway
+
+1. Push the repository to GitHub.
+2. Connect the repository to Vercel.
+3. Configure the frontend environment variables.
+4. Deploy the backend gateway separately.
+5. Configure the frontend WebSocket URL to point to the deployed gateway.
+6. Test wallet authentication and messaging in the deployed environment.
+
 ---
 
-# 🔒 Security Considerations
+# 🔒 13. Security Considerations
 
 Supmate is designed around decentralized identity and client-side messaging operations.
 
@@ -509,7 +526,7 @@ Important considerations:
 - Review message encryption and fallback behavior before production use.
 - Do not assume that a WebSocket relay itself provides end-to-end encryption.
 
-### Encryption and Fallback
+## Encryption and Fallback
 
 When recipient messaging access is available, the application can use the DeSo SDK's encryption functionality.
 
@@ -519,7 +536,7 @@ Users should understand whether a message is encrypted before sending it.
 
 ---
 
-# 🧪 Testing & Project Status
+# 🧪 14. Testing & Project Status
 
 Useful development commands:
 
@@ -537,7 +554,7 @@ npx tsc --noEmit
 npm run build
 ```
 
-Previously recorded project checks:
+## Previously Recorded Project Checks
 
 | Check | Previously Recorded Result |
 |---|---|
@@ -546,11 +563,11 @@ Previously recorded project checks:
 | TypeScript | Check available |
 | Jest | Test runner available |
 
-These are previously recorded results and should be rerun against the current version before claiming a fresh verification.
+These are previously recorded results and should be rerun against the current version before claiming fresh verification.
 
 ---
 
-# 📈 Roadmap
+# 📈 15. Roadmap
 
 - [ ] Expand automated test coverage.
 - [ ] Improve WebSocket reliability.
@@ -564,9 +581,11 @@ These are previously recorded results and should be rerun against the current ve
 
 ---
 
-# 🤝 Contributing
+# 🤝 16. Contributing
 
 Contributions are welcome.
+
+## Contribution Steps
 
 1. Fork the repository.
 2. Create a feature branch.
@@ -593,6 +612,7 @@ npm run build
 
 ```bash
 git add .
+
 git commit -m "Add your feature"
 ```
 
@@ -600,7 +620,7 @@ git commit -m "Add your feature"
 
 ---
 
-# 📄 License
+# 📄 17. License
 
 Supmate is released under the MIT License.
 
@@ -614,7 +634,7 @@ See the repository's license file for details.
 
 ### Your Space. Your Keys. Your Conversations.
 
-**Decentralized identity. Modern communication. Web3.**
+**Decentralized Identity. Modern Communication. Web3.**
 
 [GitHub Repository](https://github.com/GREYHATTER225/supmate-web3)
 
