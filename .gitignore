@@ -23,3 +23,18 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# Dependencies
+node_modules/
+
+
+# Server build output
+server/dist/

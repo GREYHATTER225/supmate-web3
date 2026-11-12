@@ -1,3 +1,4 @@
+
 import {
   Menu,
   MenuHandler,
@@ -6,7 +7,7 @@ import {
 } from "@material-tailwind/react";
 import { UserContext } from "contexts/UserContext";
 import { identity } from "deso-protocol";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { toast } from "react-toastify";
 import { RefreshContext } from "../contexts/RefreshContext";
 import { DemoContext } from "../contexts/DemoContext";
@@ -16,13 +17,13 @@ import { SaveToClipboard } from "./shared/save-to-clipboard";
 import { UserAccountList } from "./user-account-list";
 import { DEMO_USER } from "../utils/demoData";
 import { playClickSound } from "../utils/soundEffects";
-import { Badge } from "./ui/badge";
-import { IconButton } from "./ui/icon-button";
 import { AssetIcon } from "./ui/asset-icon";
+import { WalletDashboardModal } from "./connect/WalletDashboardModal";
 
-/** Local, monochrome volume glyphs (inline SVG — no external library). */
 const VolumeOn = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+    strokeLinejoin="round" aria-hidden="true">
     <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none" />
     <path d="M15.5 8.5a5 5 0 0 1 0 7" />
     <path d="M18.5 5.5a9.4 9.4 0 0 1 0 13" />
@@ -30,7 +31,9 @@ const VolumeOn = () => (
 );
 
 const VolumeOff = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+    strokeLinejoin="round" aria-hidden="true">
     <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none" />
     <path d="m16 9 5 6M21 9l-5 6" />
   </svg>
@@ -39,6 +42,8 @@ const VolumeOff = () => (
 export const Header = () => {
   const { appUser } = useContext(UserContext);
   const { setLockRefresh } = useContext(RefreshContext);
+  const [isWalletDashboardOpen, setIsWalletDashboardOpen] = useState(false);
+
   const {
     isDemoMode,
     setIsAuthModalOpen,
@@ -50,241 +55,416 @@ export const Header = () => {
   const currentUserDisplay = isDemoMode
     ? DEMO_USER.name
     : appUser
-    ? formatDisplayName(appUser)
-    : null;
+      ? formatDisplayName(appUser)
+      : null;
+
+  const handleLogout = async () => {
+    setLockRefresh(true);
+    try {
+      await identity.logout();
+    } catch (e) {
+      toast.error(`Logout error: ${e}`);
+    } finally {
+      setLockRefresh(false);
+    }
+  };
+
+  const handleSwitch = async () => {
+    setLockRefresh(true);
+    try {
+      await identity.login();
+    } catch (e) {
+      toast.error(`Login error: ${e}`);
+    } finally {
+      setLockRefresh(false);
+    }
+  };
 
   return (
-    <header
-      className="flex justify-between items-center px-4 md:px-6 fixed top-0 z-50 w-full glass-mid"
-      style={{ height: "var(--header-h)" }}
-    >
-      {/* Brand */}
-      <a href="/" className="flex items-center gap-3 group" aria-label="Supmate Home">
-        <div
-          className="w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] shrink-0"
-          style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-specular)",
-            boxShadow: "var(--shadow-elev-1)",
-          }}
+    <>
+      <header
+        className="
+          fixed top-0 z-50 w-full
+          flex items-center justify-between
+          px-4 md:px-7
+          border-b-[3px] border-[#171717]
+          bg-[#fff6e7]
+          shadow-[0_5px_0_rgba(20,20,20,0.12)]
+        "
+        style={{
+          height: "var(--header-h)",
+          backgroundImage:
+            "radial-gradient(#d8cbb7 0.7px, transparent 0.7px)",
+          backgroundSize: "9px 9px",
+        }}
+      >
+        {/* Brand */}
+        <a
+          href="/"
+          aria-label="Supmate Home"
+          className="relative z-10 flex items-center gap-3 group"
         >
-          <AssetIcon name="chatLogo" size={17} tone="none" active />
+          <div className="
+            relative flex h-11 w-11 items-center justify-center
+            rounded-xl border-[2.5px] border-[#171717]
+            bg-[#167fc0] text-white
+            shadow-[3px_3px_0_#171717]
+            transition-transform group-hover:-rotate-3
+          ">
+            <AssetIcon name="chatLogo" size={23} tone="none" active />
+            <span className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full border-2 border-[#171717] bg-[#ef3928]" />
+          </div>
+
+          <div className="flex flex-col leading-none">
+            <span className="
+              text-[19px] font-black tracking-[0.13em]
+              text-[#171717]
+            ">
+              SUPMATE
+            </span>
+            <span className="
+              mt-1 font-mono text-[9px] font-bold
+              tracking-[0.18em] text-[#59534c]
+            ">
+              SOVEREIGN WEB3 CHAT
+            </span>
+          </div>
+
+          {isDemoMode && (
+            <span className="
+              ml-1 rounded-sm border-2 border-[#171717]
+              bg-[#ffca45] px-2 py-1
+              font-mono text-[9px] font-black uppercase
+              text-[#171717] shadow-[2px_2px_0_#171717]
+            ">
+              Demo
+            </span>
+          )}
+        </a>
+
+        {/* Center comic-style navigation label */}
+        <div className="hidden lg:flex items-center gap-7">
+          <span className="
+            font-black text-[11px] uppercase
+            tracking-wider text-[#242424]
+          ">
+            SOVEREIGN MESSAGING
+          </span>
+
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ef3928]" />
+
+          <span className="
+            font-mono text-[10px] font-bold
+            tracking-widest text-[#777067]
+          ">
+            BUILT ON DESO
+          </span>
         </div>
 
-        <div className="flex flex-col leading-none">
-          <span
-            className="font-extrabold tracking-wider"
-            style={{ fontSize: 15, letterSpacing: "0.1em" }}
-          >
-            SUPMATE
-          </span>
-          <span
-            className="hidden sm:block"
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.14em",
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-              fontWeight: 600,
-            }}
-          >
-            Sovereign Web3 Chat
-          </span>
-        </div>
+        {/* Right controls */}
+        <div className="relative z-10 flex items-center gap-2 md:gap-3">
 
-        {isDemoMode && (
-          <Badge tone="accent" pulse uppercase className="ml-1">
-            Sandbox
-          </Badge>
-        )}
-      </a>
-
-      {/* Right controls */}
-      <div className="flex items-center gap-2">
-        {/* Sound toggle */}
-        <IconButton
-          size="md"
-          label={soundEnabled ? "Mute sounds" : "Enable sounds"}
-          onClick={() => {
-            const next = !soundEnabled;
-            setSoundEnabled(next);
-            if (next) playClickSound();
-          }}
-        >
-          {soundEnabled ? <VolumeOn /> : <VolumeOff />}
-        </IconButton>
-
-        {/* Explore demo */}
-        {!appUser && !isDemoMode && (
+          {/* Sound */}
           <button
-            onClick={() => triggerWarpTransition(true)}
-            className="btn-secondary hidden sm:inline-flex"
-            style={{ padding: "7px 16px", fontSize: 13 }}
-          >
-            Explore Demo
-          </button>
-        )}
-
-        {/* Connect button */}
-        {!appUser && (
-          <button
+            type="button"
             onClick={() => {
-              playClickSound();
-              setIsAuthModalOpen(true);
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) playClickSound();
             }}
-            className="btn-primary"
-            style={{ padding: "8px 18px", fontSize: 13 }}
+            title={soundEnabled ? "Mute sounds" : "Enable sounds"}
+            aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
+            className="
+              flex h-10 w-10 items-center justify-center
+              rounded-xl border-2 border-[#171717]
+              bg-white text-[#171717]
+              shadow-[2px_2px_0_#171717]
+              transition-all hover:-translate-y-0.5
+              hover:bg-[#ffca45] active:translate-y-0
+              active:shadow-none
+            "
           >
-            <span className="hidden sm:inline">Get Started</span>
-            <span className="sm:hidden">Connect</span>
+            {soundEnabled ? <VolumeOn /> : <VolumeOff />}
           </button>
-        )}
 
-        {/* Account menu */}
-        {(appUser || isDemoMode) && (
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex flex-col items-end">
-              <span className="font-semibold" style={{ fontSize: 13 }}>
-                {currentUserDisplay}
-              </span>
-              {isDemoMode && (
-                <span
-                  className="mono"
-                  style={{ fontSize: 9, color: "var(--accent-success)", letterSpacing: "0.12em" }}
-                >
-                  SANDBOX
+          {/* Demo */}
+          {!appUser && !isDemoMode && (
+            <button
+              type="button"
+              onClick={() => triggerWarpTransition(true)}
+              className="
+                hidden sm:inline-flex items-center
+                rounded-xl border-2 border-[#171717]
+                bg-[#1689c8] px-4 py-2.5
+                font-mono text-[10px] font-black uppercase
+                tracking-wider text-white
+                shadow-[3px_3px_0_#171717]
+                transition-all hover:-translate-y-0.5
+                hover:shadow-[4px_4px_0_#171717]
+                active:translate-y-0 active:shadow-none
+              "
+            >
+              Explore Demo
+            </button>
+          )}
+
+          {/* Connect */}
+          {!appUser && (
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setIsAuthModalOpen(true);
+              }}
+              className="
+                rounded-xl border-2 border-[#171717]
+                bg-[#ef3928] px-4 md:px-5 py-2.5
+                font-mono text-[10px] font-black uppercase
+                tracking-wider text-white
+                shadow-[3px_3px_0_#171717]
+                transition-all hover:-translate-y-0.5
+                hover:bg-[#d9281c]
+                hover:shadow-[4px_4px_0_#171717]
+                active:translate-y-0 active:shadow-none
+              "
+            >
+              <span className="hidden sm:inline">Connect Wallet</span>
+              <span className="sm:hidden">Connect</span>
+            </button>
+          )}
+
+          {/* Account */}
+          {(appUser || isDemoMode) && (
+            <div className="flex items-center gap-3">
+
+              <div className="hidden md:flex flex-col items-end">
+                <span className="
+                  max-w-[150px] truncate text-xs
+                  font-black text-[#171717]
+                ">
+                  {currentUserDisplay}
                 </span>
-              )}
-            </div>
+                <span className="
+                  mt-0.5 font-mono text-[9px]
+                  font-bold tracking-widest text-[#777067]
+                ">
+                  {isDemoMode ? "SANDBOX MODE" : "CONNECTED"}
+                </span>
+              </div>
 
-            <Menu placement="bottom-end">
-              <MenuHandler>
-                <div
-                  className="cursor-pointer rounded-full transition-all duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.96] p-[2px]"
-                  style={{
-                    background: "var(--bg-surface)",
-                    border: "1px solid var(--border-specular)",
-                    boxShadow: "var(--shadow-elev-1)",
-                  }}
+              <Menu placement="bottom-end">
+                <MenuHandler>
+                  <button
+                    type="button"
+                    aria-label="Open account menu"
+                    className="
+                      rounded-xl border-[2.5px] border-[#171717]
+                      bg-[#ffca45] p-1
+                      shadow-[3px_3px_0_#171717]
+                      transition-all hover:-translate-y-0.5
+                      hover:rotate-2 active:translate-y-0
+                      active:shadow-none
+                    "
+                  >
+                    <div className="
+                      h-8 w-8 overflow-hidden rounded-lg
+                      border border-[#171717] bg-white
+                    ">
+                      {isDemoMode ? (
+                        <img
+                          src={DEMO_USER.avatar}
+                          alt="Demo profile"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <MessagingDisplayAvatar
+                          publicKey={appUser?.PublicKeyBase58Check}
+                          diameter={32}
+                        />
+                      )}
+                    </div>
+                  </button>
+                </MenuHandler>
+
+                <MenuList
+                  className="
+                    rounded-xl border-[2px] border-[#171717]
+                    bg-[#fff6e7] p-2 text-[#171717]
+                    shadow-[6px_6px_0_#171717]
+                  "
+                  style={{ minWidth: 245 }}
                 >
-                  <div className="rounded-full overflow-hidden" style={{ background: "var(--bg-surface-elevated)" }}>
-                    {isDemoMode ? (
-                      <img src={DEMO_USER.avatar} alt="Demo" className="w-8 h-8 rounded-full object-cover" />
-                    ) : (
-                      <MessagingDisplayAvatar publicKey={appUser?.PublicKeyBase58Check} diameter={32} />
+                  <div className="
+                    mb-2 flex items-center justify-between
+                    border-b-2 border-[#171717]/15
+                    px-3 py-3
+                  ">
+                    <span className="
+                      font-mono text-[10px] font-black
+                      uppercase tracking-widest
+                    ">
+                      {isDemoMode ? "Mock Profile" : "Account Control"}
+                    </span>
+
+                    {!isDemoMode && (
+                      <button
+                        type="button"
+                        onClick={handleSwitch}
+                        className="
+                          flex items-center gap-1.5
+                          rounded-md border-2 border-[#171717]
+                          bg-[#ffca45] px-2.5 py-1
+                          text-[10px] font-black
+                          shadow-[2px_2px_0_#171717]
+                          hover:bg-[#ffb82e]
+                        "
+                      >
+                        <AssetIcon name="changeUser" size={13} active />
+                        Switch
+                      </button>
                     )}
                   </div>
-                </div>
-              </MenuHandler>
 
-              <MenuList
-                className="p-2 text-white rounded-2xl glass-hi"
-                style={{ minWidth: 220 }}
-              >
-                <div className="px-3 py-2 mb-1 flex justify-between items-center" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                  <span className="label-caps" style={{ fontSize: 10 }}>
-                    {isDemoMode ? "Mock Profile" : "Account"}
-                  </span>
-                  {!isDemoMode && (
-                    <button
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97]"
-                      style={{
-                        background: "var(--color-emerald-dim)",
-                        border: "1px solid var(--line-emerald)",
-                        color: "var(--color-emerald)",
-                      }}
-                      onClick={async () => {
-                        setLockRefresh(true);
-                        try { await identity.login(); } catch (e) { toast.error(`Login error: ${e}`); }
-                        setLockRefresh(false);
-                      }}
-                    >
-                      <AssetIcon name="changeUser" size={13} active />
-                      <span>Switch</span>
-                    </button>
+                  {!isDemoMode && <UserAccountList />}
+
+                  {appUser?.ProfileEntryResponse && (
+                    <MenuItem className="
+                      my-1 rounded-lg p-0
+                      hover:bg-[#1689c8]/10
+                    ">
+                      <a
+                        href={getProfileURL(appUser.ProfileEntryResponse.Username)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="
+                          flex w-full items-center gap-3
+                          px-3 py-2.5 text-xs font-bold
+                        "
+                      >
+                        <AssetIcon name="externalLink" size={15} />
+                        My Profile
+                      </a>
+                    </MenuItem>
                   )}
-                </div>
 
-                {!isDemoMode && <UserAccountList />}
+                  {appUser && (
+                    <MenuItem
+                      onClick={() => setIsWalletDashboardOpen(true)}
+                      className="
+                        my-1 flex items-center gap-3
+                        rounded-lg px-3 py-2.5
+                        text-xs font-bold text-[#d72f21]
+                        hover:bg-[#ef3928]/10
+                      "
+                    >
+                      <span>💎</span>
+                      Supmate Wallet Manager
+                    </MenuItem>
+                  )}
 
-                {appUser?.ProfileEntryResponse && (
-                  <MenuItem className="flex items-center p-0 hover:bg-white/5 rounded-xl my-0.5">
+                  {appUser && (
+                    <MenuItem className="
+                      my-1 rounded-lg px-3 py-2.5
+                      hover:bg-[#1689c8]/10
+                    ">
+                      <SaveToClipboard
+                        text={appUser.PublicKeyBase58Check}
+                        copyIcon={<AssetIcon name="copy" size={15} />}
+                        copiedIcon={
+                          <AssetIcon name="copyFilled" size={15} tone="accent" active />
+                        }
+                      >
+                        <span className="flex items-center gap-3 text-xs font-bold">
+                          <AssetIcon name="copy" size={15} />
+                          Copy Public Key
+                        </span>
+                      </SaveToClipboard>
+                    </MenuItem>
+                  )}
+
+                  <MenuItem className="
+                    my-1 rounded-lg p-0
+                    hover:bg-[#1689c8]/10
+                  ">
                     <a
-                      href={getProfileURL(appUser.ProfileEntryResponse.Username)}
+                      href="https://wallet.deso.com"
                       target="_blank"
                       rel="noreferrer"
-                      className="w-full outline-0"
+                      className="
+                        flex w-full items-center gap-3
+                        px-3 py-2.5 text-xs font-bold
+                      "
                     >
-                      <div className="w-full flex items-center py-2 px-3 gap-3 text-sm text-white">
-                        <AssetIcon name="externalLink" size={15} />
-                        <span>My Profile</span>
-                      </div>
+                      <AssetIcon name="deso" size={15} />
+                      DeSo Wallet
                     </a>
                   </MenuItem>
-                )}
 
-                {appUser && (
-                  <MenuItem className="flex items-center py-2 px-3 gap-3 text-white hover:bg-white/5 rounded-xl my-0.5 text-sm">
-                    <SaveToClipboard
-                      text={appUser.PublicKeyBase58Check}
-                      copyIcon={<AssetIcon name="copy" size={15} />}
-                      copiedIcon={<AssetIcon name="copyFilled" size={15} tone="accent" active />}
+                  <MenuItem className="
+                    my-1 rounded-lg p-0
+                    hover:bg-[#1689c8]/10
+                  ">
+                    <a
+                      href="https://github.com/deso-protocol/deso-chat-protocol"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="
+                        flex w-full items-center gap-3
+                        px-3 py-2.5 text-xs font-bold
+                      "
                     >
-                      <span>Copy Public Key</span>
-                    </SaveToClipboard>
-                  </MenuItem>
-                )}
-
-                <MenuItem className="flex items-center p-0 hover:bg-white/5 rounded-xl my-0.5">
-                  <a href="https://wallet.deso.com" target="_blank" rel="noreferrer" className="w-full outline-0">
-                    <div className="w-full flex items-center py-2 px-3 gap-3 text-sm text-white">
-                      <AssetIcon name="deso" size={15} />
-                      <span>DeSo Wallet</span>
-                    </div>
-                  </a>
-                </MenuItem>
-
-                <MenuItem className="flex items-center p-0 hover:bg-white/5 rounded-xl my-0.5">
-                  <a href="https://github.com/deso-protocol/deso-chat-protocol" target="_blank" rel="noreferrer" className="w-full outline-0">
-                    <div className="w-full flex items-center py-2 px-3 gap-3 text-sm text-white">
                       <AssetIcon name="externalLink" size={15} />
-                      <span>Source Code</span>
-                    </div>
-                  </a>
-                </MenuItem>
+                      Source Code
+                    </a>
+                  </MenuItem>
 
-                <div style={{ borderTop: "1px solid var(--border-subtle)", marginTop: 4, paddingTop: 4 }}>
-                  {isDemoMode ? (
-                    <MenuItem
-                      className="flex items-center gap-3 py-2 px-3 text-sm rounded-xl"
-                      style={{ color: "var(--color-danger)" }}
-                      onClick={() => triggerWarpTransition(false)}
-                    >
-                      <AssetIcon name="logout" size={15} />
-                      <span>Exit Demo Mode</span>
-                    </MenuItem>
-                  ) : (
-                    appUser && (
+                  <div className="mt-2 border-t-2 border-[#171717]/15 pt-2">
+                    {isDemoMode ? (
                       <MenuItem
-                        className="flex items-center gap-3 py-2 px-3 text-sm rounded-xl"
-                        style={{ color: "var(--color-danger)" }}
-                        onClick={async () => {
-                          setLockRefresh(true);
-                          try { await identity.logout(); } catch (e) { toast.error(`Logout error: ${e}`); }
-                          setLockRefresh(false);
-                        }}
+                        onClick={() => triggerWarpTransition(false)}
+                        className="
+                          flex items-center gap-3 rounded-lg
+                          px-3 py-2.5 text-xs font-black
+                          uppercase tracking-wider text-[#d72f21]
+                          hover:bg-[#ef3928]/10
+                        "
                       >
                         <AssetIcon name="logout" size={15} />
-                        <span>Disconnect</span>
+                        Exit Demo Mode
                       </MenuItem>
-                    )
-                  )}
-                </div>
-              </MenuList>
-            </Menu>
-          </div>
-        )}
-      </div>
-    </header>
+                    ) : (
+                      appUser && (
+                        <MenuItem
+                          onClick={handleLogout}
+                          className="
+                            flex items-center gap-3 rounded-lg
+                            px-3 py-2.5 text-xs font-black
+                            uppercase tracking-wider text-[#d72f21]
+                            hover:bg-[#ef3928]/10
+                          "
+                        >
+                          <AssetIcon name="logout" size={15} />
+                          Disconnect
+                        </MenuItem>
+                      )
+                    )}
+                  </div>
+                </MenuList>
+              </Menu>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {appUser && (
+        <WalletDashboardModal
+          isOpen={isWalletDashboardOpen}
+          onClose={() => setIsWalletDashboardOpen(false)}
+          publicKey={appUser.PublicKeyBase58Check}
+          desoBalanceNanos={appUser.BalanceNanos}
+          onDisconnect={handleLogout}
+        />
+      )}
+    </>
   );
 };

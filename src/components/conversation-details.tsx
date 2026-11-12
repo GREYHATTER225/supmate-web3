@@ -1,6 +1,5 @@
 import { FC } from "react";
 import { shortenLongWord } from "./search-users";
-import { IconButton } from "./ui/icon-button";
 import { Badge } from "./ui/badge";
 
 interface ConversationDetailsPanelProps {
@@ -46,9 +45,8 @@ const FlaskGlyph = ({ size = 16 }: { size?: number }) => (
 /**
  * Conversation details / security rail.
  *
- * Shows only information that is real and verifiable in the deployed
- * product: channel identity, storage model, encryption model, and the
- * fee rate from the codebase constant (1,000 nanos/KB).
+ * Re-imagined with a top-notch cyber-glass dark orange/amber aesthetic
+ * inspired by high-end dashboard cards and floating bento design principles.
  */
 export const ConversationDetailsPanel: FC<ConversationDetailsPanelProps> = ({
   chatName,
@@ -58,138 +56,125 @@ export const ConversationDetailsPanel: FC<ConversationDetailsPanelProps> = ({
   onClose,
 }) => (
   <aside
-    className="w-full md:w-[320px] lg:w-[340px] flex flex-col h-full overflow-y-auto custom-scrollbar shrink-0"
-    style={{
-      background: "var(--bg-surface)",
-      borderLeft: "1px solid var(--border-subtle)",
-      zIndex: 30,
-    }}
+    className="w-full md:w-[320px] lg:w-[340px] flex flex-col h-full overflow-y-auto custom-scrollbar shrink-0 relative bg-neutral-950/95 backdrop-blur-2xl border-l border-orange-500/20 shadow-[-10px_0_40px_rgba(0,0,0,0.8)] z-30"
     aria-label="Conversation details"
   >
+    {/* Ambient lighting glow */}
+    <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
     {/* Header */}
-    <div
-      className="p-4 flex items-center justify-between shrink-0"
-      style={{ borderBottom: "1px solid var(--border-subtle)" }}
-    >
-      <div className="flex items-center gap-2.5">
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: "var(--color-emerald-dim)", color: "var(--color-emerald)", border: "1px solid var(--line-emerald)" }}
-        >
-          <ShieldGlyph size={14} />
+    <div className="p-4 flex items-center justify-between shrink-0 border-b border-orange-500/15 relative z-10 bg-neutral-900/40">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-orange-500/10 text-orange-400 border border-orange-500/30 shadow-[0_0_12px_rgba(249,115,22,0.2)]">
+          <ShieldGlyph size={15} />
         </div>
         <div>
-          <h4 className="font-bold text-[13px]">
+          <h4 className="font-bold text-xs tracking-wide text-neutral-100 uppercase">
             Conversation Details
           </h4>
-          <p className="mono text-[10px]" style={{ color: "var(--text-muted)" }}>
-            Channel info &amp; security model
+          <p className="font-mono text-[10px] text-neutral-400 tracking-wider">
+            SECURITY &amp; TELEMETRY
           </p>
         </div>
       </div>
-      <IconButton size="sm" label="Close details" onClick={onClose}>
-        <span aria-hidden="true" style={{ lineHeight: 1, fontSize: 16 }}>×</span>
-      </IconButton>
+      <button
+        className="p-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white border border-neutral-800 hover:border-orange-500/40 transition-all active:scale-95"
+        onClick={onClose}
+        aria-label="Close details"
+      >
+        <span aria-hidden="true" className="text-base leading-none">×</span>
+      </button>
     </div>
 
-    <div className="p-4 space-y-3">
-      {/* Channel identity */}
-      <section
-        className="p-4"
-        style={{
-          borderRadius: "var(--radius-lg)",
-          border: "1px solid var(--border-subtle)",
-          background: "var(--bg-surface-elevated)",
-        }}
-      >
+    {/* Content Container */}
+    <div className="p-4 space-y-3.5 relative z-10">
+
+      {/* Channel Identity Card */}
+      <section className="relative p-4 rounded-2xl bg-neutral-900/80 border border-orange-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.3)] overflow-hidden group hover:border-orange-500/40 transition-all">
+        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-orange-500 to-amber-500" />
+
         <div className="flex items-center justify-between mb-2">
-          <span className="label-caps" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <span className="font-mono text-[10px] tracking-widest text-orange-400 uppercase flex items-center gap-1.5">
             <LinkGlyph size={11} />
             {isGroup ? "Group channel" : "Direct channel"}
           </span>
           {isDemo && <Badge tone="warning" uppercase>Simulated</Badge>}
         </div>
-        <div className="font-bold text-sm truncate">
+
+        <div className="font-bold text-sm tracking-tight text-white truncate">
           {chatName}
         </div>
-        <div className="mono text-[11px] truncate mt-1" style={{ color: "var(--text-muted)" }}>
+
+        <div className="font-mono text-[11px] text-neutral-400 truncate mt-1 bg-neutral-950/60 px-2.5 py-1 rounded-lg border border-neutral-800/80">
           {isGroup
             ? "Access-group backed"
             : publicKey
-            ? shortenLongWord(publicKey, 10, 8)
-            : "—"}
+              ? shortenLongWord(publicKey, 10, 8)
+              : "—"}
         </div>
       </section>
 
-      {/* Model summary */}
-      <section
-        className="p-4 space-y-3"
-        style={{ borderRadius: "var(--radius-lg)", border: "1px solid var(--border-subtle)", background: "var(--bg-surface-elevated)" }}
-      >
-        <div className="flex items-center gap-2">
-          <ServerGlyph size={14} />
-          <span className="font-bold text-[12.5px]">
-            How this channel works
+      {/* Model Summary Bento Card */}
+      <section className="p-4 rounded-2xl bg-neutral-900/80 border border-orange-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.3)] space-y-3">
+        <div className="flex items-center gap-2 pb-2 border-b border-neutral-800/80">
+          <div className="text-orange-400">
+            <ServerGlyph size={14} />
+          </div>
+          <span className="font-bold text-xs tracking-wide text-neutral-200">
+            HOW THIS CHANNEL WORKS
           </span>
         </div>
 
-        <div className="space-y-2.5 text-[12.5px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-          <div className="flex justify-between gap-4">
-            <span style={{ color: "var(--text-muted)" }}>Encryption</span>
-            <span className="text-right">
-              DeSo Access Group keys, decrypted on your device
+        <div className="space-y-2.5 text-xs text-neutral-300 font-sans">
+          <div className="flex justify-between items-center gap-4 py-1 border-b border-neutral-800/40">
+            <span className="text-neutral-400 text-[11px] font-mono">Encryption</span>
+            <span className="text-right font-medium text-[11px] text-neutral-200">
+              DeSo Access Group keys
             </span>
           </div>
-          <div className="flex justify-between gap-4">
-            <span style={{ color: "var(--text-muted)" }}>Storage</span>
-            <span className="text-right">DeSo blockchain (on-chain)</span>
+
+          <div className="flex justify-between items-center gap-4 py-1 border-b border-neutral-800/40">
+            <span className="text-neutral-400 text-[11px] font-mono">Storage</span>
+            <span className="text-right font-medium text-[11px] text-orange-400">DeSo blockchain</span>
           </div>
-          <div className="flex justify-between gap-4">
-            <span style={{ color: "var(--text-muted)" }}>Fee rate</span>
-            <span className="mono">{FEE_RATE_NANOS_PER_KB.toLocaleString()} nanos/KB</span>
+
+          <div className="flex justify-between items-center gap-4 py-1 border-b border-neutral-800/40">
+            <span className="text-neutral-400 text-[11px] font-mono">Fee rate</span>
+            <span className="font-mono text-[11px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+              {FEE_RATE_NANOS_PER_KB.toLocaleString()} nanos/KB
+            </span>
           </div>
-          <div className="flex justify-between gap-4">
-            <span style={{ color: "var(--text-muted)" }}>Signing</span>
-            <span className="text-right">
-              Derived keys after one-time authorization
+
+          <div className="flex justify-between items-center gap-4 py-1">
+            <span className="text-neutral-400 text-[11px] font-mono">Signing</span>
+            <span className="text-right font-medium text-[11px] text-neutral-200">
+              Derived keys (auth)
             </span>
           </div>
         </div>
       </section>
 
-      {/* Honest caveats */}
+      {/* Caveat Card */}
       {isDemo ? (
-        <section
-          className="p-4 flex gap-3"
-          style={{
-            borderRadius: "var(--radius-lg)",
-            background: "var(--color-amber-dim)",
-            border: "1px solid rgba(232,179,75,0.25)",
-          }}
-        >
-          <FlaskGlyph size={16} />
-          <p className="text-[12px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            This is a local preview. Messages here never leave your browser and
-            are not truly encrypted — no wallet or blockchain is involved.
+        <section className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/30 flex gap-3 shadow-lg shadow-amber-500/5">
+          <div className="text-amber-400 shrink-0 mt-0.5">
+            <FlaskGlyph size={16} />
+          </div>
+          <p className="text-[11.5px] leading-relaxed text-amber-200/90 font-medium">
+            This is a local preview. Messages never leave your browser and are not truly encrypted — no wallet or blockchain is involved.
           </p>
         </section>
       ) : (
-        <section
-          className="p-4 flex gap-3"
-          style={{
-            borderRadius: "var(--radius-lg)",
-            border: "1px solid var(--border-subtle)",
-            background: "var(--bg-surface-elevated)",
-          }}
-        >
-          <ShieldGlyph size={16} />
-          <p className="text-[12px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            End-to-end encryption applies when both parties have messaging set
-            up. If a recipient has not set up messaging, sending requires an
-            explicit opt-in, and those messages are labelled as unencrypted.
+        <section className="p-4 rounded-2xl bg-neutral-900/60 border border-orange-500/20 flex gap-3">
+          <div className="text-orange-400 shrink-0 mt-0.5">
+            <ShieldGlyph size={16} />
+          </div>
+          <p className="text-[11.5px] leading-relaxed text-neutral-300">
+            End-to-end encryption applies when both parties have messaging set up. Unverified recipients require an explicit opt-in.
           </p>
         </section>
       )}
+
     </div>
   </aside>
 );

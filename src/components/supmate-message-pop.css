@@ -1,0 +1,90 @@
+/* ==========================================
+   SUPMATE — WORKSPACE LAYOUT FOUNDATION
+========================================== */
+
+.bento-workspace,
+.bento-workspace--with-details {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.bento-rail,
+.bento-main {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.bento-rail {
+    display: flex;
+    flex-direction: column;
+}
+
+.identity-bento {
+    flex: 0 0 auto;
+}
+
+.index-bento {
+    flex: 1 1 0%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.index-bento .channel-list {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bento-main {
+    display: flex;
+    flex-direction: column;
+}
+
+.timeline-bento {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+
+    .bento-workspace,
+    .bento-workspace--with-details {
+        height: 100%;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .bento-rail {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .index-bento {
+        height: 65vh;
+        min-height: 360px;
+        flex: none;
+    }
+
+    .bento-main {
+        height: auto;
+        min-height: 65vh;
+        overflow: visible;
+    }
+
+    .timeline-bento {
+        min-height: 350px;
+        flex: 1 1 auto;
+    }
+}

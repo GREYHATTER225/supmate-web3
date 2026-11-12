@@ -1,3 +1,4 @@
+
 import { shortenLongWord } from "components/search-users";
 import { AppUser } from "contexts/UserContext";
 import { ChatType, User } from "deso-protocol";
@@ -34,14 +35,42 @@ export const scrollContainerToElement = (
   }, 0);
 };
 
+/**
+ * Safely returns the display name for a conversation.
+ *
+ * Direct messages:
+ *   Returns the username associated with firstMessagePublicKey.
+ *
+ * Group messages:
+ *   Returns the AccessGroupKeyName from the first message.
+ *
+ * Empty or incomplete conversations:
+ *   Returns null instead of throwing a runtime error.
+ */
 export const getChatNameFromConversation = (
   conversation: Conversation,
   getUsernameByPublicKeyBase58Check: { [key: string]: string }
-) => {
-  return conversation.ChatType === ChatType.DM
-    ? getUsernameByPublicKeyBase58Check[conversation.firstMessagePublicKey] ??
-        null
-    : conversation.messages[0].RecipientInfo.AccessGroupKeyName;
+): string | null => {
+  if (!conversation) {
+    return null;
+  }
+
+  if (conversation.ChatType === ChatType.DM) {
+    const publicKey = conversation.firstMessagePublicKey;
+
+    if (!publicKey) {
+      return null;
+    }
+
+    return (
+      getUsernameByPublicKeyBase58Check?.[publicKey] ?? null
+    );
+  }
+
+  return (
+    conversation.messages?.[0]?.RecipientInfo?.AccessGroupKeyName ??
+    null
+  );
 };
 
 export const isMaybeDeSoPublicKey = (query: string): boolean => {

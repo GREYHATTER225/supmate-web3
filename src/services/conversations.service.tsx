@@ -10,15 +10,14 @@ import {
   PublicKeyToProfileEntryResponseMap,
   sendDMMessage,
   sendGroupChatMessage,
-  waitForTransactionFound,
 } from "deso-protocol";
 import { toast } from "react-toastify";
 import {
   DEFAULT_KEY_MESSAGING_GROUP_NAME,
-  USER_TO_SEND_MESSAGE_TO,
 } from "../utils/constants";
 import { ConversationMap } from "../utils/types";
 import { bytesToHex } from "@noble/hashes/utils";
+import { TransactionConfirmationService } from "./transactionConfirmation.service";
 
 export const getConversationsNewMap = async (
   userPublicKeyBase58Check: string,
@@ -50,7 +49,9 @@ export const getConversationsNewMap = async (
     if (currentConversation) {
       currentConversation.messages.push(dmr);
       currentConversation.messages.sort(
-        (a, b) => b.MessageInfo.TimestampNanos - a.MessageInfo.TimestampNanos
+        (a, b) =>
+          (b.MessageInfo?.TimestampNanos ?? 0) -
+          (a.MessageInfo?.TimestampNanos ?? 0)
       );
       return;
     }
@@ -101,29 +102,19 @@ export const getConversations = async (
   updatedAllAccessGroups: AccessGroupEntryResponse[];
 }> => {
   try {
-    let {
+    const fetchWithTimeout = Promise.race([
+      getConversationsNewMap(userPublicKeyBase58Check, allAccessGroups),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("DeSo network request timed out")), 15000)
+      ),
+    ]);
+
+    const {
       conversations,
       publicKeyToProfileEntryResponseMap,
       updatedAllAccessGroups,
-    } = await getConversationsNewMap(userPublicKeyBase58Check, allAccessGroups);
+    } = await fetchWithTimeout;
 
-    if (Object.keys(conversations).length === 0) {
-      const { txnHashHex } = await encryptAndSendNewMessage(
-        "Hi. This is my first test message!",
-        userPublicKeyBase58Check,
-        USER_TO_SEND_MESSAGE_TO
-      );
-      await waitForTransactionFound(txnHashHex);
-      const getConversationsNewMapResponse = await getConversationsNewMap(
-        userPublicKeyBase58Check,
-        allAccessGroups
-      );
-      conversations = getConversationsNewMapResponse.conversations;
-      publicKeyToProfileEntryResponseMap =
-        getConversationsNewMapResponse.publicKeyToProfileEntryResponseMap;
-      updatedAllAccessGroups =
-        getConversationsNewMapResponse.updatedAllAccessGroups;
-    }
     return {
       conversations,
       publicKeyToProfileEntryResponseMap,
@@ -210,6 +201,11 @@ export const MESSAGING_ENCRYPTION_UNAVAILABLE_MESSAGE =
 export interface SendMessageResult {
   txnHashHex: string;
   isUnencrypted: boolean;
+  /** Set when the transaction did not reach CONFIRMED within the polling window. */
+  confirmationWarning?: {
+    txnHashHex: string;
+    reason: "failed" | "timeout";
+  };
 }
 
 /**
@@ -295,8 +291,16 @@ export const encryptAndSendNewMessage = async (
     throw new Error("Failed to submit transaction for sending message.");
   }
 
-  return {
-    txnHashHex: submittedTransactionResponse.TxnHashHex,
-    isUnencrypted,
-  };
+  const txnHashHex = submittedTransactionResponse.TxnHashHex;
+
+  // Track confirmation asynchronously in the background so the UI remains responsive.
+  TransactionConfirmationService.trackInBackground(txnHashHex, (result) => {
+    if (result.status !== "confirmed") {
+      toast.warning(
+        `Transaction ${txnHashHex.slice(0, 8)}... status is ${result.status}. Blockchain confirmation is pending.`
+      );
+    }
+  });
+
+  return { txnHashHex, isUnencrypted };
 };

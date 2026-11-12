@@ -55,15 +55,10 @@ export const ManageMembersDialog = ({
     <Fragment>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98]"
-        style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid var(--border-subtle)",
-          color: "var(--color-emerald)",
-        }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 active:scale-95 bg-gradient-to-r from-orange-500/10 to-amber-500/10 hover:from-orange-500/20 hover:to-amber-500/20 text-orange-400 border border-orange-500/30 hover:border-orange-500/60 shadow-[0_0_15px_rgba(255,85,0,0.15)]"
       >
         <AssetIcon name="members" size={15} />
-        <span className="hidden sm:inline">Members</span>
+        <span className="hidden sm:inline font-mono tracking-wider">Members</span>
       </button>
 
       <Dialog
@@ -72,15 +67,15 @@ export const ManageMembersDialog = ({
         title={`Group members · ${groupName}`}
         description="Members of this DeSo Access Group can encrypt and decrypt messages in the conversation."
         footer={
-          <Button variant="ghost" onClick={handleOpen}>
+          <Button variant="ghost" onClick={handleOpen} className="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 rounded-xl font-mono text-xs uppercase tracking-wider">
             Close
           </Button>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-4 text-neutral-100">
           {isGroupOwner && (
             <div>
-              <label className="field-label">Add member to group</label>
+              <label className="field-label text-orange-400 font-mono text-xs uppercase tracking-wider block mb-1.5">Add member to group</label>
               <SearchUsers
                 onSelected={(m) => m && addMember(m)}
                 placeholder="Search user to add..."
@@ -89,44 +84,37 @@ export const ManageMembersDialog = ({
           )}
 
           <div
-            className="text-[11px] font-semibold uppercase tracking-wider"
-            style={{ color: "var(--text-muted)" }}
+            className="text-[11px] font-mono font-semibold uppercase tracking-widest text-neutral-400"
           >
             Current members ({members.length})
           </div>
 
-          <div className="space-y-1.5 max-h-[220px] overflow-y-auto custom-scrollbar">
+          <div className="space-y-2 max-h-[240px] overflow-y-auto custom-scrollbar pr-1">
             {loading ? (
-              <div className="flex justify-center p-4">
-                <ClipLoader color="var(--color-emerald)" size={22} />
+              <div className="flex justify-center p-6">
+                <ClipLoader color="#ff5500" size={22} />
               </div>
             ) : members.length === 0 ? (
-              <p className="text-xs py-3" style={{ color: "var(--text-faint)" }}>
+              <p className="text-xs py-4 text-center font-mono text-neutral-500">
                 No members loaded.
               </p>
             ) : (
               members.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-2 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
+                  className="flex items-center justify-between p-2.5 rounded-2xl bg-neutral-900/80 border border-orange-500/20 hover:border-orange-500/40 transition-all shadow-sm"
                 >
-                  <div className="flex items-center gap-2 truncate min-w-0">
-                    <MessagingDisplayAvatar
-                      publicKey={member.id}
-                      diameter={26}
-                    />
-                    <span className="text-xs truncate">{member.text}</span>
+                  <div className="flex items-center gap-2.5 truncate min-w-0">
+                    <div className="rounded-xl overflow-hidden border border-orange-500/30 shrink-0 bg-neutral-950 p-0.5">
+                      <MessagingDisplayAvatar
+                        publicKey={member.id}
+                        diameter={26}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-neutral-200 truncate">{member.text}</span>
                     {member.id === ownerKey && (
                       <span
-                        className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md"
-                        style={{
-                          background: "var(--color-emerald-dim)",
-                          color: "var(--color-emerald)",
-                        }}
+                        className="inline-flex items-center gap-1 shrink-0 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-[0_0_10px_rgba(255,85,0,0.2)]"
                         title="Group owner"
                       >
                         <OwnerGlyph size={10} />

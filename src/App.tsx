@@ -116,9 +116,172 @@ function App() {
 
   useEffect(() => {
     let pollingIntervalId = 0;
+    let activeHydrationSeq = 0;
 
+    const hydrateUser = async (currentUser: any) => {
+      if (!currentUser?.publicKey) {
+        setUserState((state) => ({
+          ...state,
+          appUser: null,
+          isLoadingUser: false,
+        }));
+        return;
+      }
+
+      const seq = ++activeHydrationSeq;
+      setUserState((state) => ({ ...state, isLoadingUser: true }));
+
+      try {
+        const messagingPublicKeyBase58Check =
+          currentUser.primaryDerivedKey?.messagingPublicKeyBase58Check ||
+          currentUser.publicKey;
+
+        // Fetch user info and access groups with 10s network timeout
+        const fetchPromise = Promise.all([
+          getUser(currentUser.publicKey),
+          getAllAccessGroups({ PublicKeyBase58Check: currentUser.publicKey }),
+        ]);
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("DeSo user info request timed out")), 10000)
+        );
+
+        const [userRes, accessGroupsRes] = await Promise.race([fetchPromise, timeoutPromise]);
+
+        if (seq !== activeHydrationSeq) return;
+
+        let groupsOwned = accessGroupsRes?.AccessGroupsOwned || [];
+        const groupsMember = accessGroupsRes?.AccessGroupsMember || [];
+
+        const hasDefaultKey = groupsOwned.some(
+          (g: any) => g.AccessGroupKeyName === DEFAULT_KEY_MESSAGING_GROUP_NAME
+        );
+
+        if (!hasDefaultKey && currentUser.primaryDerivedKey?.messagingPublicKeyBase58Check) {
+          try {
+            await createAccessGroup({
+              AccessGroupOwnerPublicKeyBase58Check: currentUser.publicKey,
+              AccessGroupPublicKeyBase58Check: messagingPublicKeyBase58Check,
+              AccessGroupKeyName: DEFAULT_KEY_MESSAGING_GROUP_NAME,
+              MinFeeRateNanosPerKB: 1000,
+            });
+
+            const refreshed = await getAllAccessGroups({
+              PublicKeyBase58Check: currentUser.publicKey,
+            });
+            if (seq === activeHydrationSeq && refreshed?.AccessGroupsOwned) {
+              groupsOwned = refreshed.AccessGroupsOwned;
+            }
+          } catch (createErr) {
+            console.warn("Auto-create default-key access group skipped/failed:", createErr);
+          }
+        }
+
+        if (seq !== activeHydrationSeq) return;
+
+        const baseUser: User | null = userRes?.UserList?.[0] ?? null;
+        const appUser: AppUser | null = baseUser
+          ? {
+              ...baseUser,
+              messagingPublicKeyBase58Check,
+              accessGroupsOwned: groupsOwned,
+            }
+          : ({
+              PublicKeyBase58Check: currentUser.publicKey,
+              BalanceNanos: 0,
+              messagingPublicKeyBase58Check,
+              accessGroupsOwned: groupsOwned,
+            } as unknown as AppUser);
+
+        const allAccessGroups = groupsOwned.concat(groupsMember);
+
+        setUserState((state) => ({
+          ...state,
+          appUser,
+          allAccessGroups,
+          isLoadingUser: false,
+        }));
+
+        if (baseUser && baseUser.BalanceNanos === 0) {
+          window.clearInterval(pollingIntervalId);
+          pollingIntervalId = window.setInterval(async () => {
+            try {
+              const res = await getUser(currentUser.publicKey);
+              const user = res.UserList?.[0];
+              if (user && user.BalanceNanos > 0 && seq === activeHydrationSeq) {
+                setUserState((state) => ({
+                  ...state,
+                  appUser: {
+                    ...user,
+                    messagingPublicKeyBase58Check,
+                  },
+                }));
+                window.clearInterval(pollingIntervalId);
+              }
+            } catch {
+              // Ignore polling errors
+            }
+          }, 3000);
+        }
+      } catch (err) {
+        console.error("User hydration error:", err);
+        if (seq === activeHydrationSeq) {
+          setUserState((state) => ({
+            ...state,
+            appUser: {
+              PublicKeyBase58Check: currentUser.publicKey,
+              BalanceNanos: 0,
+              messagingPublicKeyBase58Check: currentUser.publicKey,
+              accessGroupsOwned: [],
+            } as unknown as AppUser,
+            isLoadingUser: false,
+          }));
+        }
+      }
+    };
+
+    // 1. Initial snapshot: hydrate immediately from SDK cache without waiting for an event
+    try {
+      const snapshotRes: any =
+        typeof identity.snapshot === "function" ? identity.snapshot() : null;
+      if (snapshotRes && typeof snapshotRes.then === "function") {
+        snapshotRes
+          .then((s: any) => {
+            if (s?.currentUser) {
+              hydrateUser(s.currentUser);
+            } else {
+              setUserState((state) => ({ ...state, isLoadingUser: false }));
+            }
+          })
+          .catch((err: any) => {
+            console.warn("Initial identity snapshot failed:", err);
+            setUserState((state) => ({ ...state, isLoadingUser: false }));
+          });
+      } else if (snapshotRes?.currentUser) {
+        hydrateUser(snapshotRes.currentUser);
+      } else {
+        setUserState((state) => ({ ...state, isLoadingUser: false }));
+      }
+    } catch (err) {
+      console.warn("Initial identity snapshot call error:", err);
+      setUserState((state) => ({ ...state, isLoadingUser: false }));
+    }
+
+    // 2. Safety guard: ensure isLoadingUser never stays stuck permanently
+    const safetyTimer = setTimeout(() => {
+      setUserState((state) => {
+        if (state.isLoadingUser) {
+          console.warn("[Supmate] Loading safety timer fired; unblocking UI.");
+          return { ...state, isLoadingUser: false };
+        }
+        return state;
+      });
+    }, 6000);
+
+    // 3. Subscribe to identity events for login, logout, and user switching
     identity.subscribe(({ event, currentUser, alternateUsers }) => {
       if (!currentUser && !alternateUsers) {
+        window.clearInterval(pollingIntervalId);
         setUserState((state) => ({
           ...state,
           appUser: null,
@@ -135,117 +298,25 @@ function App() {
         return;
       }
 
-      if (
-        currentUser &&
-        currentUser?.publicKey !== userState.appUser?.PublicKeyBase58Check &&
-        [
-          NOTIFICATION_EVENTS.SUBSCRIBE,
-          NOTIFICATION_EVENTS.LOGIN_END,
-          NOTIFICATION_EVENTS.CHANGE_ACTIVE_USER,
-        ].includes(event)
-      ) {
-        const { messagingPublicKeyBase58Check } =
-          currentUser.primaryDerivedKey;
-
-        setUserState((state) => ({ ...state, isLoadingUser: true }));
-        Promise.all([
-          getUser(currentUser.publicKey),
-          getAllAccessGroups({
-            PublicKeyBase58Check: currentUser.publicKey,
-          }),
-        ])
-          .then(([userRes, { AccessGroupsOwned, AccessGroupsMember }]) => {
-            if (
-              !AccessGroupsOwned?.find(
-                ({ AccessGroupKeyName }) =>
-                  AccessGroupKeyName === DEFAULT_KEY_MESSAGING_GROUP_NAME
-              )
-            ) {
-              return createAccessGroup({
-                AccessGroupOwnerPublicKeyBase58Check: currentUser.publicKey,
-                AccessGroupPublicKeyBase58Check:
-                  messagingPublicKeyBase58Check,
-                AccessGroupKeyName: DEFAULT_KEY_MESSAGING_GROUP_NAME,
-                MinFeeRateNanosPerKB: 1000,
-              }).then(() => {
-                return getAllAccessGroups({
-                  PublicKeyBase58Check: currentUser.publicKey,
-                }).then((groups) => {
-                  const user: User | null = userRes.UserList?.[0] ?? null;
-                  const appUser: AppUser | null = user && {
-                    ...user,
-                    messagingPublicKeyBase58Check,
-                    accessGroupsOwned: groups.AccessGroupsOwned,
-                  };
-                  const allAccessGroups = (AccessGroupsOwned || []).concat(
-                    AccessGroupsMember || []
-                  );
-
-                  setUserState((state) => ({
-                    ...state,
-                    appUser,
-                    allAccessGroups,
-                  }));
-
-                  return user;
-                });
-              });
-            } else {
-              const user: User | null = userRes.UserList?.[0] ?? null;
-              const appUser: AppUser | null = user && {
-                ...user,
-                messagingPublicKeyBase58Check,
-                accessGroupsOwned: AccessGroupsOwned,
-              };
-              const allAccessGroups = (AccessGroupsOwned || []).concat(
-                AccessGroupsMember || []
-              );
-
-              setUserState((state) => ({
-                ...state,
-                appUser,
-                allAccessGroups,
-              }));
-
-              return user;
-            }
-          })
-          .then((user) => {
-            if (!user) return;
-            window.clearInterval(pollingIntervalId);
-            if (user.BalanceNanos === 0) {
-              pollingIntervalId = window.setInterval(async () => {
-                getUser(currentUser.publicKey).then((res) => {
-                  const user = res.UserList?.[0];
-                  if (user && user.BalanceNanos > 0) {
-                    setUserState((state) => ({
-                      ...state,
-                      appUser: {
-                        ...user,
-                        messagingPublicKeyBase58Check,
-                      },
-                    }));
-                    window.clearInterval(pollingIntervalId);
-                  }
-                });
-              }, 3000);
-            }
-          })
-          .finally(() => {
-            setUserState((state) => ({ ...state, isLoadingUser: false }));
-          });
+      if (currentUser) {
+        hydrateUser(currentUser);
         return;
       }
 
       if (event === NOTIFICATION_EVENTS.LOGOUT_END) {
+        window.clearInterval(pollingIntervalId);
         if (alternateUsers) {
           const fallbackUser = Object.values(alternateUsers)[0];
           identity.setActiveUser(fallbackUser.publicKey);
           return;
         }
-        return;
       }
     });
+
+    return () => {
+      window.clearInterval(pollingIntervalId);
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   return (

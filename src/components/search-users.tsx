@@ -1,3 +1,4 @@
+
 import { Combobox } from "@headlessui/react";
 import {
   getProfiles,
@@ -7,9 +8,16 @@ import {
 } from "deso-protocol";
 import { ethers } from "ethers";
 import debounce from "lodash/debounce";
-import { Fragment, useContext, useEffect, useState } from "react";
+import {
+  Fragment,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify";
+
 import { UserContext } from "../contexts/UserContext";
 import {
   isMaybeDeSoPublicKey,
@@ -27,7 +35,8 @@ export const shortenLongWord = (
 ) => {
   if (
     !key ||
-    key.length <= endFirstPartAfter + startSecondPartAfter + separator.length
+    key.length <=
+    endFirstPartAfter + startSecondPartAfter + separator.length
   ) {
     return key || "";
   }
@@ -38,6 +47,7 @@ export const shortenLongWord = (
     key.slice(-startSecondPartAfter),
   ].join("");
 };
+
 export const nameOrFormattedKey = (
   profile: ProfileEntryResponse | null,
   key: string
@@ -59,9 +69,241 @@ interface SearchUsersProps {
   error?: string;
   onFocus?: () => void;
   onBlur?: () => void;
-  onTyping?: any;
+  onTyping?: (
+    query: string,
+    setItems: (items: SearchMenuItem[]) => void
+  ) => void;
   className?: string;
 }
+
+const searchUsersStyles = `
+  .supmate-user-search {
+    position: relative;
+    width: 100%;
+    color: #f8fafc;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .supmate-user-search * {
+    box-sizing: border-box;
+  }
+
+  .supmate-user-search .supmate-user-search-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 10px 12px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    outline: none !important;
+    color: #f8fafc !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    transition: color .2s ease;
+  }
+
+  .supmate-user-search .supmate-user-search-input::placeholder {
+    color: rgba(203,213,225,.53) !important;
+    opacity: 1;
+  }
+
+  .supmate-user-search .supmate-user-search-input:focus {
+    outline: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .supmate-user-search .supmate-user-search-input.field-error {
+    color: #fca5a5 !important;
+  }
+
+  .supmate-user-search-results {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px;
+    border: 1px solid rgba(255,255,255,.24);
+    border-radius: 15px;
+
+    background:
+      radial-gradient(
+        ellipse at 10% 0%,
+        rgba(34,211,238,.09),
+        transparent 42%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(25,29,36,.98),
+        rgba(5,7,10,.99)
+      );
+
+    box-shadow:
+      0 16px 45px rgba(0,0,0,.72),
+      0 0 0 1px rgba(255,255,255,.04),
+      inset 0 1px 1px rgba(255,255,255,.16);
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    scrollbar-width: thin;
+    scrollbar-color: #64748b transparent;
+  }
+
+  .supmate-user-search-results::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .supmate-user-search-results::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: linear-gradient(#e2e8f0, #64748b);
+  }
+
+  .supmate-user-search-option {
+    position: relative;
+    display: flex;
+    min-height: 55px;
+    align-items: center;
+    gap: 11px;
+    padding: 8px 10px;
+    margin: 2px 0;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #cbd5e1;
+    transition:
+      background .18s ease,
+      border-color .18s ease,
+      transform .18s ease;
+  }
+
+  .supmate-user-search-option[data-active="true"] {
+    color: #fff;
+    border-color: rgba(255,255,255,.20);
+    background:
+      linear-gradient(
+        110deg,
+        rgba(255,255,255,.13),
+        rgba(34,211,238,.08),
+        rgba(255,255,255,.025)
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.13),
+      0 3px 12px rgba(0,0,0,.3);
+  }
+
+  .supmate-user-search-option[data-active="true"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      #fff,
+      #67e8f9,
+      #a78bfa
+    );
+    box-shadow: 0 0 9px rgba(34,211,238,.65);
+  }
+
+  .supmate-user-search-avatar {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 50%;
+    background: linear-gradient(145deg,#64748b,#080a0d);
+    box-shadow:
+      0 0 8px rgba(255,255,255,.08),
+      inset 0 1px 2px rgba(255,255,255,.35);
+  }
+
+  .supmate-user-search-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .supmate-user-search-name {
+    overflow: hidden;
+    color: #f8fafc;
+    font-size: 12px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .supmate-user-search-key {
+    overflow: hidden;
+    color: #84909f;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .supmate-user-search-arrow {
+    flex-shrink: 0;
+    color: #cbd5e1;
+    opacity: .6;
+    font-size: 15px;
+    transition: transform .18s ease, opacity .18s ease;
+  }
+
+  .supmate-user-search-option[data-active="true"]
+  .supmate-user-search-arrow {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+
+  .supmate-user-search-loading,
+  .supmate-user-search-empty {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    color: #9ca3af;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .supmate-user-search-label {
+    padding: 7px 10px 9px;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  .supmate-user-search-error {
+    margin-top: 5px;
+  }
+
+  @media(prefers-reduced-motion: reduce) {
+    .supmate-user-search-option,
+    .supmate-user-search-arrow {
+      transition: none;
+    }
+  }
+`;
 
 export const SearchUsers = ({
   placeholder = "Search for users",
@@ -74,14 +316,16 @@ export const SearchUsers = ({
   onTyping,
   className = "search-input py-2 px-3",
 }: SearchUsersProps) => {
-  const [menuItems, setMenuItems] = useState<SearchMenuItem[]>();
+  const [menuItems, setMenuItems] = useState<SearchMenuItem[]>([]);
   const [inputValue, setInputValue] = useState(initialValue);
   const [loading, setLoading] = useState(false);
-  // TODO: we should roll this into the identity package since we already need
-  // the ethers package there to recover the public key from a signature.
-  const provider = new ethers.providers.InfuraProvider("homestead"); //, process.env.REACT_APP_INFURA_API_KEY);
 
   const { appUser } = useContext(UserContext);
+
+  const provider = useMemo(
+    () => new ethers.providers.InfuraProvider("homestead"),
+    []
+  );
 
   useEffect(() => {
     setInputValue(initialValue);
@@ -95,106 +339,139 @@ export const SearchUsers = ({
       NoErrorOnMissing: true,
     });
 
-    const item = {
+    const item: SearchMenuItem = {
       id: publicKey,
-      profile: res?.Profile,
-      text: nameOrFormattedKey(res?.Profile, publicKey),
+      profile: res?.Profile || null,
+      text: nameOrFormattedKey(res?.Profile || null, publicKey),
     };
+
     await onSelected(item);
     setInputValue("");
     setMenuItems([]);
+
     return item;
   };
 
   const _getProfiles = async (query: string) => {
-    // TODO: find way to not pound infura API.
     try {
       if (isMaybeENSName(query)) {
         const ethAddress = await provider.resolveName(query);
+
         if (!ethAddress) {
-          return Promise.reject(`unable to resolve ENS name ${query}`);
+          throw new Error(`Unable to resolve ENS name ${query}`);
         }
-        const desoPublicKey = await identity.ethereumAddressToDesoAddress(
-          ethAddress
-        );
+
+        const desoPublicKey =
+          await identity.ethereumAddressToDesoAddress(ethAddress);
+
         await searchForPublicKey(desoPublicKey);
         return;
-      } else if (isMaybeETHAddress(query)) {
-        const desoPublicKey = await identity.ethereumAddressToDesoAddress(
-          query
-        );
+      }
+
+      if (isMaybeETHAddress(query)) {
+        const desoPublicKey =
+          await identity.ethereumAddressToDesoAddress(query);
+
         await searchForPublicKey(desoPublicKey);
         return;
-      } else if (isMaybeDeSoPublicKey(query)) {
+      }
+
+      if (isMaybeDeSoPublicKey(query)) {
         await searchForPublicKey(query);
         return;
       }
-    } catch (e: any) {
+
+      const res = await getProfiles({
+        PublicKeyBase58Check: "",
+        Username: "",
+        UsernamePrefix: query,
+        Description: "",
+        OrderBy: "",
+        NumToFetch: 7,
+        ReaderPublicKeyBase58Check:
+          appUser?.PublicKeyBase58Check ?? "",
+        ModerationType: "",
+        FetchUsersThatHODL: false,
+        AddGlobalFeedBool: false,
+      });
+
+      setMenuItems(
+        (res.ProfilesFound || []).map((profile) => ({
+          id: profile.PublicKeyBase58Check,
+          profile,
+          text: nameOrFormattedKey(
+            profile,
+            profile.PublicKeyBase58Check
+          ),
+        }))
+      );
+    } catch (error: any) {
       if (
-        e?.message
+        error?.message
           ?.toString()
           .startsWith(
             "GetSingleProfile: could not find profile for username or public key"
           )
       ) {
+        setMenuItems([]);
         return;
       }
-      toast.error(`Search error: ${e?.message || e}`);
+
+      toast.error(`Search error: ${error?.message || error}`);
+      setMenuItems([]);
     }
-
-    const res = await getProfiles({
-      PublicKeyBase58Check: "",
-      Username: "",
-      UsernamePrefix: query,
-      Description: "",
-      OrderBy: "",
-      NumToFetch: 7,
-      ReaderPublicKeyBase58Check: appUser?.PublicKeyBase58Check ?? "",
-      ModerationType: "",
-      FetchUsersThatHODL: false,
-      AddGlobalFeedBool: false,
-    });
-
-    setMenuItems(
-      (res.ProfilesFound || []).map((p) => ({
-        id: p.PublicKeyBase58Check,
-        profile: p,
-        text: nameOrFormattedKey(p, p.PublicKeyBase58Check),
-      }))
-    );
   };
 
-  const getProfilesDebounced = debounce(async (q: string) => {
-    setLoading(true);
-    await _getProfiles(q)
-      .catch((e) => {
-        console.error(e);
-      })
-      .finally(() => setLoading(false));
-  }, 500);
-  const shownItems = menuItems || [];
+  const getProfilesDebounced = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        setLoading(true);
+
+        try {
+          await _getProfiles(query);
+        } finally {
+          setLoading(false);
+        }
+      }, 500),
+    [appUser?.PublicKeyBase58Check, provider]
+  );
+
+  useEffect(() => {
+    return () => {
+      getProfilesDebounced.cancel();
+    };
+  }, [getProfilesDebounced]);
+
+  const shownItems = menuItems;
 
   return (
-    <div className="relative">
+    <div className="supmate-user-search">
+      <style>{searchUsersStyles}</style>
+
       <Combobox
-        nullable={true}
+        nullable
         value={inputValue}
         onChange={(value) => {
           if (!value) {
             setInputValue("");
+            setMenuItems([]);
             onSelected(null);
             return;
           }
 
-          const menuItem = shownItems.find(({ id }) => id === value);
+          const menuItem = shownItems.find(
+            ({ id }) => id === value
+          );
 
-          if (!menuItem) {
-            return;
-          }
+          if (!menuItem) return;
 
           if (hasPersistentDisplayValue) {
             setInputValue(menuItem.id);
+          } else {
+            setInputValue("");
           }
+
+          setMenuItems([]);
           onSelected(menuItem);
         }}
       >
@@ -202,78 +479,105 @@ export const SearchUsers = ({
           <Combobox.Input
             placeholder={placeholder}
             spellCheck={false}
-            className={`w-full ${className} ${
-              error ? "field-error" : ""
-            }`}
-            onChange={async (ev) => {
-              const name = ev.target.value.trim();
+            autoComplete="off"
+            className={`supmate-user-search-input ${className} ${error ? "field-error" : ""
+              }`}
+            onChange={async (event) => {
+              const query = event.target.value.trim();
 
-              if (!name) {
-                setInputValue("");
+              setInputValue(query);
+
+              if (!query) {
+                getProfilesDebounced.cancel();
+                setLoading(false);
                 setMenuItems([]);
                 return;
               }
 
               if (onTyping) {
-                onTyping(name, (items: Array<SearchMenuItem>) => {
+                onTyping(query, (items: SearchMenuItem[]) => {
                   setMenuItems(items);
                 });
                 return;
               }
-              await getProfilesDebounced(name);
+
+              await getProfilesDebounced(query);
             }}
             onFocus={onFocus}
             onBlur={onBlur}
+            displayValue={(value: string) => value}
           />
 
-          <MyErrorLabel error={error} />
+          <div className="supmate-user-search-error">
+            <MyErrorLabel error={error} />
+          </div>
         </div>
+
         <Combobox.Options
-          className={`absolute z-30 w-full max-h-80 mt-1.5 rounded-xl overflow-y-scroll custom-scrollbar glass-hi ${
-            loading || shownItems.length > 0 ? "" : "hidden"
-          }`}
+          className={`supmate-user-search-results ${loading || shownItems.length > 0
+              ? ""
+              : "hidden"
+            }`}
         >
-          <Combobox.Option
-            value={false}
-            className="pointer-events-none"
-          >
-            {loading && (
-              <div className="flex justify-center">
-                <ClipLoader
-                  color={"var(--color-emerald)"}
-                  loading={loading}
-                  size={24}
-                  className="my-4"
-                />
-              </div>
-            )}
-          </Combobox.Option>
+          <div className="supmate-user-search-label">
+            {loading ? "Searching identities" : "Matching identities"}
+          </div>
+
+          {loading && (
+            <li className="supmate-user-search-loading">
+              <ClipLoader
+                color="#a5f3fc"
+                loading
+                size={19}
+              />
+              Resolving identity...
+            </li>
+          )}
+
           {!loading &&
             shownItems.map(({ id, profile, text }) => (
-              <Combobox.Option key={id} value={id} as={Fragment}>
+              <Combobox.Option
+                key={id}
+                value={id}
+                as={Fragment}
+              >
                 {({ active }) => (
                   <li
-                    className={`cursor-pointer ${
-                      active ? "bg-white/6 text-[var(--text-primary)]" : "text-[var(--text-secondary)]"
-                    }`}
+                    className="supmate-user-search-option"
+                    data-active={active}
                   >
-                    <div className="flex p-2 items-center">
+                    <div className="supmate-user-search-avatar">
                       {profile && (
                         <MessagingDisplayAvatar
                           publicKey={profile.PublicKeyBase58Check}
+                          username={profile.Username}
                           diameter={34}
                           classNames="mx-0"
                         />
                       )}
-                      <span className="ml-3 text-sm truncate">{text}</span>
                     </div>
+
+                    <div className="supmate-user-search-details">
+                      <span className="supmate-user-search-name">
+                        {text}
+                      </span>
+
+                      <span className="supmate-user-search-key">
+                        {shortenLongWord(id, 9, 9)}
+                      </span>
+                    </div>
+
+                    <span className="supmate-user-search-arrow">
+                      ↗
+                    </span>
                   </li>
                 )}
               </Combobox.Option>
             ))}
+
           {!loading && shownItems.length === 0 && (
-            <li className="px-3 py-3 text-xs" style={{ color: "var(--text-faint)" }}>
-              Start typing to find a user…
+            <li className="supmate-user-search-empty">
+              Start typing to discover DeSo identities.
             </li>
           )}
         </Combobox.Options>

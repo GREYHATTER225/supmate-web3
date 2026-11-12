@@ -31,13 +31,18 @@ export function useMembers(
     if (!open) {
       setMembers([]);
     } else if (conversation) {
+      const firstMsg = conversation?.messages?.[0];
+      if (!firstMsg?.RecipientInfo) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
 
       getPaginatedAccessGroupMembers({
         AccessGroupOwnerPublicKeyBase58Check:
-          conversation.messages[0].RecipientInfo.OwnerPublicKeyBase58Check,
+          firstMsg.RecipientInfo.OwnerPublicKeyBase58Check,
         AccessGroupKeyName:
-          conversation.messages[0].RecipientInfo.AccessGroupKeyName,
+          firstMsg.RecipientInfo.AccessGroupKeyName,
         MaxMembersToFetch:
           MAX_MEMBERS_TO_REQUEST_IN_GROUP + MAX_MEMBERS_IN_GROUP_SUMMARY_SHOWN,
       })

@@ -3,6 +3,7 @@ import { identity } from "deso-protocol";
 import { toast } from "react-toastify";
 import { ClipLoader } from "react-spinners";
 import { AssetIcon } from "../ui/asset-icon";
+import { SupmateConnectModal } from "../connect/SupmateConnectModal";
 
 export interface SupmateAuthModalProps {
   isOpen: boolean;
@@ -87,6 +88,7 @@ export const SupmateAuthModal: FC<SupmateAuthModalProps> = ({
   onExploreDemo,
 }) => {
   const [connectingMethod, setConnectingMethod] = useState<string | null>(null);
+  const [isSupmateConnectOpen, setIsSupmateConnectOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -274,6 +276,51 @@ export const SupmateAuthModal: FC<SupmateAuthModalProps> = ({
               Connect
             </p>
 
+            {/* Supmate Connect branded experience */}
+            <button
+              onClick={() => setIsSupmateConnectOpen(true)}
+              className="w-full flex items-center gap-4 p-4 mb-3 rounded-2xl transition-all duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] text-left"
+              style={{
+                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.06) 100%)",
+                border: "1px solid var(--line-emerald)",
+              }}
+            >
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
+                style={{
+                  background: "var(--color-emerald)",
+                  color: "#07080A",
+                  boxShadow: "0 4px 14px rgba(16, 185, 129, 0.35)",
+                }}
+              >
+                ⚡
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="font-bold text-sm text-white"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    Supmate Connect
+                  </span>
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      background: "var(--color-emerald)",
+                      color: "#07080A",
+                    }}
+                  >
+                    Native
+                  </span>
+                </div>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Create or import wallet directly · Non-custodial
+                </p>
+              </div>
+              <div className="shrink-0 text-emerald-400 font-bold">→</div>
+            </button>
+
             <button
               id="deso"
               disabled={!!connectingMethod}
@@ -400,6 +447,15 @@ export const SupmateAuthModal: FC<SupmateAuthModalProps> = ({
           </div>
         </div>
       </div>
+
+      <SupmateConnectModal
+        isOpen={isSupmateConnectOpen}
+        onClose={() => setIsSupmateConnectOpen(false)}
+        onWalletConnected={() => {
+          setIsSupmateConnectOpen(false);
+          onClose();
+        }}
+      />
     </div>
   );
 };
